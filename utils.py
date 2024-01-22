@@ -2,6 +2,7 @@
 import pickle
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def data_feed():
@@ -45,3 +46,20 @@ def RGB2GRAY(X):
     X_grey = np.array(X_grey)
 
     return X_grey
+
+
+def plot_accuracy_loss(history):
+    fig, axs = plt.subplots(2, 1, figsize=(12, 12))
+
+    axs[0].set_ylabel("Loss")
+    axs[1].set_ylabel("Accuracy")
+
+    axs[0].plot(history.history['loss'], '-o', label='Training')
+    axs[0].plot(history.history['val_loss'], '-o', label='Validation')
+    axs[1].plot(history.history['accuracy'], '-o', label="Training")
+    axs[1].plot(history.history['val_accuracy'], '-o', label='Validation')
+
+    axs[0].legend()
+    axs[1].legend()
+    plt.legend()
+    plt.savefig("plots/cnn_model_performance.png")

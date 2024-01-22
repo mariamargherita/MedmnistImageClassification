@@ -1,8 +1,9 @@
 
 """
 !!! This has to be run OUTSIDE the project environment !!!
-In our environment we have tensorflow while the medmnist data extraction is optimized on pyTorch so it is better to keep
-the data extraction separate
+In our environment we have tensorflow while the medmnist data extraction is optimized on pyTorch. Medmnist installed
+together with tensorflow raises various errors thus it is better to keep the data import outside the project
+environment.
 """
 
 
@@ -17,6 +18,7 @@ print("---------------------- Import, preprocess and load data -----------------
 
 # Import data
 data_flag = 'pathmnist'
+#data_flag = 'breastmnist'
 download = True
 
 NUM_EPOCHS = 3
