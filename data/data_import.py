@@ -18,8 +18,11 @@ print("---------------------- Import, preprocess and load data -----------------
 
 # Import data
 data_flag = 'pathmnist'
-#data_flag = 'breastmnist'
+# data_flag = 'breastmnist'
 download = True
+
+if data_flag not in ['pathmnist', 'breastmnist']:
+    raise ValueError("The data_flag should be either 'pathmnist' or 'breastmnist'.")
 
 NUM_EPOCHS = 3
 BATCH_SIZE = 128
@@ -54,22 +57,42 @@ y_test = np.reshape(test_loader.dataset.labels, (len(test_loader.dataset.labels)
 
 print("---------- Store data ----------")
 
-with open('X_train.pickle', 'wb') as f:
+if data_flag == "pathmnist":
+    file_name1 = 'X_train.pickle'
+    file_name2 = 'y_train.pickle'
+    file_name3 = 'X_val.pickle'
+    file_name4 = 'y_val.pickle'
+    file_name5 = 'X_test.pickle'
+    file_name6 = 'y_test.pickle'
+
+elif data_flag == 'breastmnist':
+    file_name1 = 'X_train_b.pickle'
+    file_name2 = 'y_train_b.pickle'
+    file_name3 = 'X_val_b.pickle'
+    file_name4 = 'y_val_b.pickle'
+    file_name5 = 'X_test_b.pickle'
+    file_name6 = 'y_test_b.pickle'
+
+else:
+    raise ValueError("The data_flag should be either 'pathmnist' or 'breastmnist'.")
+
+
+with open(file_name1, 'wb') as f:
     pickle.dump(np.array(X_train), f, pickle.HIGHEST_PROTOCOL)
 
-with open('y_train.pickle', 'wb') as f:
+with open(file_name2, 'wb') as f:
     pickle.dump(y_train, f, pickle.HIGHEST_PROTOCOL)
 
-with open('X_val.pickle', 'wb') as f:
+with open(file_name3, 'wb') as f:
     pickle.dump(X_val, f, pickle.HIGHEST_PROTOCOL)
 
-with open('y_val.pickle', 'wb') as f:
+with open(file_name4, 'wb') as f:
     pickle.dump(y_val, f, pickle.HIGHEST_PROTOCOL)
 
-with open('X_test.pickle', 'wb') as f:
+with open(file_name5, 'wb') as f:
     pickle.dump(X_test, f, pickle.HIGHEST_PROTOCOL)
 
-with open('y_test.pickle', 'wb') as f:
+with open(file_name6, 'wb') as f:
     pickle.dump(y_test, f, pickle.HIGHEST_PROTOCOL)
 
 
