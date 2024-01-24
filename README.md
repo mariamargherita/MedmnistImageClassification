@@ -104,8 +104,8 @@ the images are already provided in grey-scale.
     For exploration purposes, we fit the model on both RGB images and grey-scale images. We then decided to keep the RGB model since it held better performance results on the test set.
     
     We trained the model on 90% of training data and reserved a 10% for validation data. Once we found the model with the best performance on the validation data, getting a *test accuracy of 85%*.
-    
-> For exploration purposes, in the pipeline we left the code for training the best model on the full training data with prediction of test data labels and respective print of performance results.
+      
+    > For exploration purposes, in the pipeline we left the code for training the best model on the full training data with prediction of test data labels and respective print of performance results.
 
 
 - *BreastMNIST* dataset 
