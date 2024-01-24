@@ -87,7 +87,8 @@ the images are already provided in grey-scale.
 
 ### Model Selection and Training
 
-- *PathMNIST* dataset \\
+- *PathMNIST* dataset
+
 We tried different model complexities and tuned parameters and hyperparameters. We also tried different batch sizes since this could have a strong impact on how well the neural network learns to generalize. Finally, we made sure to add dropout and early stopping to limit over fitting.
 
 - *BreastMNIST* dataset
@@ -97,7 +98,8 @@ We tried different model complexities and tuned parameters and hyperparameters. 
 
 ## Results
 
-- *PathMNIST* dataset \\
+- *PathMNIST* dataset 
+
 For exploration purposes, we fit the model on both RGB images and grey-scale images. We then decided to keep the RGB model since it held better performance results on the test set.
 
 We trained the model on 90% of training data and reserved a 10% for validation data. Once we found the model with the best performance on the validation data, getting a *test accuracy of 85%*.
