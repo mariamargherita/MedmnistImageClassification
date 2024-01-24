@@ -1,48 +1,64 @@
 
-from utils import data_feed
+from utils import data_feed, augment_data, fit_grid
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.ensemble import RandomForestClassifier  #Random Forest algorithm
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
-from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
+from sklearn.model_selection import RandomizedSearchCV, GridSearchCV, ParameterGrid
+from tqdm import tqdm
+
 import joblib
 from joblib import Parallel, delayed
 from dask.distributed import Client, LocalCluster
 from sklearn.model_selection import cross_val_score
 
-'''
-Next steps:
-- try other models on this 
- 
-'''
+print("-------------- Import data --------------")
 
-print("-------------- Import Data --------------")
+X_train_base, y_train_base, X_val, y_val, X_test, y_test = data_feed(data_flag='breastmnist')
 
-X_train, y_train, X_val, y_val, X_test, y_test = data_feed(data_flag='breastmnist')
+print("Training shape", X_train_base.shape)
+print("Validation shape", X_val.shape)
+print("Testing shape", X_test.shape)
+
+print("-------------- Train random forest with best parameters on all training set --------------")
+
+X_train = np.vstack((X_train_base, X_val))
+y_train = np.hstack((y_train_base, y_val))
+
+print("Training predictors shape", X_train.shape)
+print("Training target shape", y_train.shape)
+print("Testing predictors shape", X_test.shape)
+print("Testing target shape", y_test.shape)
+
+print("-------------- Perform data augmentation on training data --------------")
+
+X_train_aug, y_train_aug = augment_data(X_train, y_train, n_augs=9)
+
+print("Training predictors shape", X_train_aug.shape)
+print("Training target shape", y_train_aug.shape)
 
 print("-------------- Reshape data --------------")
 
-X_train_reshaped = X_train.reshape(X_train.shape[0], X_train.shape[1]*X_train.shape[2])
-X_val_reshaped = X_val.reshape(X_val.shape[0], X_val.shape[1]*X_val.shape[2])
-X_test_reshaped = X_test.reshape(X_test.shape[0], X_test.shape[1]*X_test.shape[2])
+X_train_reshaped = X_train_aug.reshape(X_train_aug.shape[0], X_train_aug.shape[1] * X_train_aug.shape[2])
+#X_val_reshaped = X_val.reshape(X_val.shape[0], X_val.shape[1] * X_val.shape[2])
+X_test_reshaped = X_test.reshape(X_test.shape[0], X_test.shape[1] * X_test.shape[2])
 
 # Change integers to 32-bit floating point numbers
 X_train_reshaped = X_train_reshaped.astype('float32')
-X_val_reshaped = X_val_reshaped.astype('float32')
+#X_val_reshaped = X_val_reshaped.astype('float32')
 X_test_reshaped = X_test_reshaped.astype('float32')
 
 print("Training shape", X_train_reshaped.shape)
-print("Validation shape", X_val_reshaped.shape)
+#print("Training shape", X_val_reshaped.shape)
 print("Testing shape", X_test_reshaped.shape)
 
 print("-------------- Scale data --------------")
 
 X_train_st = StandardScaler().fit_transform(X_train_reshaped)
-X_val_st = StandardScaler().fit_transform(X_val_reshaped)
+#X_val_st = StandardScaler().fit_transform(X_val_reshaped)
 X_test_st = StandardScaler().fit_transform(X_test_reshaped)
-
 
 print("-------------- Perform PCA --------------")
 
@@ -67,31 +83,25 @@ pca.fit(X_train_st)
 print(f'Total number of components used after PCA : {pca.n_components_}')
 
 X_train_pca = pca.transform(X_train_st)
-X_val_pca = pca.transform(X_val_st)
+#X_val_pca = pca.transform(X_val_st)
 X_test_pca = pca.transform(X_test_st)
 
 print(f'Training shape: {X_train_pca.shape}')
-print(f'Validation shape: {X_val_pca.shape}')
+#print(f'Training shape: {X_val_pca.shape}')
 print(f'Test shape: {X_test_pca.shape}')
 
-# Join training set and validation set since we will actually use cross validation and grid search to tune our random forest
-X_train_full = np.vstack((X_train_pca, X_val_pca))
-y_train_full = np.hstack((y_train, y_val))
-
-print(f'Training predictors shape: {X_train_full.shape}')
-print(f'Training target shape: {y_train_full.shape}')
-
-print("-------------- Grid Search CV - Random forest classifier --------------")
+print("-------------- Parallelized Grid Search - Random forest classifier --------------")
 
 # Create the parameter grid based on the results of random search
 param_grid = {
     'bootstrap': [True, False],
     'max_depth': [80, 90, 100, None],
     'max_features': ["sqrt", "log2"],
-    'n_estimators': [100, 200, 300, 400]
+    'n_estimators': [200, 300, 400, 500] # next: 500, 600, 700
 }
 
 # Create base model
+'''
 rf = RandomForestClassifier()
 
 # Instantiate the grid search model
@@ -99,14 +109,28 @@ grid_search = GridSearchCV(estimator=rf,
                            param_grid=param_grid,
                            cv=3,
                            verbose=10)
+'''
 
-grid_search.fit(X_train_pca, y_train)
-print(f"The best parameters are: {grid_search.best_params_}")
+# Generate all possible parameter combinations
+param_combinations = list(ParameterGrid(param_grid))
+
+grid_results = Parallel(n_jobs=-1)(delayed(fit_grid)(X_train_pca, y_train_aug, params) for params in tqdm(param_combinations))
+
+# Perform grid search in parallel with progress tracking
+sorted_grid_results = sorted(grid_results, key=lambda x: x[0], reverse=True)
+best_grid = sorted_grid_results[0]
+
+print(f"CV validation accuracy for best parameters: {best_grid[0]}")
+print(f"The best parameters are: {best_grid[1]}")
 
 print("-------------- Make predictions on test set with best model obtained from grid search --------------")
 
-best_model = grid_search.best_estimator_
+best_model = RandomForestClassifier(**best_grid[1], verbose=1)
+best_model.fit(X_train_pca, y_train_aug)
 y_pred = best_model.predict(X_test_pca)
-print(f"Test accuracy: {accuracy_score(y_test, y_pred)}")
+print(f"Test accuracy: {accuracy_score(y_test, y_pred)}") # 0.73
+print(f"Test accuracy: {classification_report(y_test, y_pred)}")
+
+
 
 print("-------------- End of pipeline --------------")

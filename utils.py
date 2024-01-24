@@ -3,6 +3,9 @@ import pickle
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from tensorflow.keras import Sequential, layers
+import tensorflow
+from tqdm import tqdm
 
 
 def data_feed(data_flag):
@@ -90,21 +93,76 @@ def plot_accuracy_loss(history):
     plt.savefig("plots/cnn_model_performance.png")
 
 
-def accuracy_fn(y_true, y_pred):
+def augment_data(X, y, n_augs=9):
     """
-    This function computes model accuracy.
-    :param y_true: actual target
-    :param y_pred: predicted target
-    :return: model accuracy
+    Performs data augmentation on provided dataset.
+    :param X: predictors set
+    :param y: target set
+    :param n_augs: number of times we want to augment an image
+    :return: augmented dataset
+    """
+    data_augmentation = Sequential([
+        layers.RandomFlip("horizontal_and_vertical", seed=12),
+        layers.RandomRotation(0.2, seed=23)
+    ])
+
+    X_aug = []
+    y_aug = []
+    for index in tqdm(range(len(X))):
+        image = X[index]
+        image = image.reshape(image.shape + (1,))
+        label = y[index]
+        for i in range(n_augs):
+            augmented_image = data_augmentation(tensorflow.convert_to_tensor(image))
+            augmented_image = augmented_image.numpy()
+            augmented_image = augmented_image.reshape(augmented_image.shape[:-1])
+            X_aug.append(augmented_image)
+            y_aug.append(label)
+
+    X_aug = np.asarray(X_aug)
+    y_aug = np.asarray(y_aug)
+
+    shuffle_index = np.random.permutation(len(X_aug))
+    X_aug = X_aug[shuffle_index]
+    y_aug = y_aug[shuffle_index]
+
+    return X_aug, y_aug
+
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+
+def fit_grid(X, y, param_combination):
     """
 
-    boolean_result = []
-    for t, p in zip(y_true, y_pred):
-        if t == p:
-            boolean_result.append(True)
-        else:
-            boolean_result.append(False)
+    :param grid_search:
+    :param X:
+    :param y:
+    :param param_combination:
+    :return:
+    """
 
-    correct = np.array(boolean_result).sum()
-    accuracy = correct / len(y_pred)
-    return accuracy
+    classifier = RandomForestClassifier(**param_combination, verbose=1)
+    sk_fold = StratifiedKFold(n_splits=10, shuffle=True, random_state=12)
+    scores = cross_val_score(classifier, X, y, cv=sk_fold)
+    cv_score = np.mean(scores)
+
+    print(f"CV score: {cv_score}")
+
+    return cv_score, param_combination
+
+
+'''
+def plot_grid(grid_search, x, y):
+    x_axis =
+    y_axis =
+    scores = [i[1] for i in grid_search.grid_scores_]
+    scores = np.array(scores).reshape(len(Cs), len(Gammas))
+
+    for ind, i in enumerate(Cs):
+        plt.plot(Gammas, scores[ind], label='C: ' + str(i))
+    plt.legend()
+    plt.xlabel('Gamma')
+    plt.ylabel('Mean score')
+    plt.show()
+'''
