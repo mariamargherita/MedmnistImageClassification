@@ -1,11 +1,11 @@
 
-from utils import data_feed, RGB2GRAY, plot_accuracy
+from utils import data_feed
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier  #Random Forest algorithm
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.metrics import classification_report, accuracy_score
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
 import joblib
 from joblib import Parallel, delayed
@@ -50,7 +50,7 @@ print("-------------- Perform PCA --------------")
 This part of the code is left for illustration purposes but there is no need to run it since the output plot is stored in 
 the plots folder.
 
-pca = PCA(n_components=X_train_st.shape[1])
+pca = PCA(n_components=min(X_train_st.shape[0], X_train_st.shape[1]))
 pca_data = pca.fit_transform(X_train_st)
 percentage_var_explained = pca.explained_variance_ / np.sum(pca.explained_variance_);
 cum_var_explained = np.cumsum(percentage_var_explained)
@@ -61,7 +61,7 @@ plt.ylabel("Cumulative_explained_variance")
 plt.savefig("plots/PCA.png")
 '''
 
-pca = PCA(n_components=.95)
+pca = PCA(n_components=.99)
 pca.fit(X_train_st)
 
 print(f'Total number of components used after PCA : {pca.n_components_}')
@@ -74,31 +74,39 @@ print(f'Training shape: {X_train_pca.shape}')
 print(f'Validation shape: {X_val_pca.shape}')
 print(f'Test shape: {X_test_pca.shape}')
 
-print("-------------- Random forest classifier --------------")
+# Join training set and validation set since we will actually use cross validation and grid search to tune our random forest
+X_train_full = np.vstack((X_train_pca, X_val_pca))
+y_train_full = np.hstack((y_train, y_val))
+
+print(f'Training predictors shape: {X_train_full.shape}')
+print(f'Training target shape: {y_train_full.shape}')
+
+print("-------------- Grid Search CV - Random forest classifier --------------")
 
 # Create the parameter grid based on the results of random search
 param_grid = {
     'bootstrap': [True, False],
     'max_depth': [80, 90, 100, None],
-    'max_features': ["sqrt", "log2", None],
-    'min_samples_leaf': [1, 2, 3, 4, 5],
-    'min_samples_split': [2, 4, 6, 8, 10, 12],
+    'max_features': ["sqrt", "log2"],
     'n_estimators': [100, 200, 300, 400]
 }
 
-# Create a based model
+# Create base model
 rf = RandomForestClassifier()
 
 # Instantiate the grid search model
 grid_search = GridSearchCV(estimator=rf,
                            param_grid=param_grid,
                            cv=3,
-                           verbose=2)
+                           verbose=10)
 
-Parallel(n_jobs=-1, verbose=11)(grid_search.fit(X_train_pca, y_train))
+grid_search.fit(X_train_pca, y_train)
+print(f"The best parameters are: {grid_search.best_params_}")
 
-y_pred = rf.predict(X_test_pca)
-print ("Classification Report")
-print(classification_report(y_test, y_pred))
+print("-------------- Make predictions on test set with best model obtained from grid search --------------")
+
+best_model = grid_search.best_estimator_
+y_pred = best_model.predict(X_test_pca)
+print(f"Test accuracy: {accuracy_score(y_test, y_pred)}")
 
 print("-------------- End of pipeline --------------")
