@@ -93,7 +93,7 @@ param_grid = {
     'bootstrap': [True, False],
     'max_depth': [80, 90, 100, None],
     'max_features': ["sqrt", "log2"],
-    'n_estimators': [200, 300, 400, 500] # next: 500, 600, 700
+    'n_estimators': [200, 300, 400, 500]
 }
 
 # Create base model
@@ -124,7 +124,7 @@ print("-------------- Make predictions on test set with best model obtained from
 best_model = RandomForestClassifier(**best_grid[1], verbose=1)
 best_model.fit(X_train_pca, y_train_aug)
 y_pred = best_model.predict(X_test_pca)
-print(f"Test accuracy: {accuracy_score(y_test, y_pred)}") # 0.73
+print(f"Test accuracy: {accuracy_score(y_test, y_pred)}")
 print(f"Test accuracy: {classification_report(y_test, y_pred)}")
 
 
