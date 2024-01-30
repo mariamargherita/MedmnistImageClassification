@@ -3,8 +3,7 @@ from utils import data_feed, RGB2GRAY, plot_accuracy_loss
 from cnn_model import cnn_model, full_cnn_model
 import random
 from datetime import datetime
-import numpy as np
-from sklearn.metrics import accuracy_score
+
 
 print("-------------- Import Data --------------")
 

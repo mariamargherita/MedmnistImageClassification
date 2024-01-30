@@ -56,13 +56,13 @@ You should now be able to run the Notebooks.
 This repository contains the following files:
 
    ```
+    ├──── data foder: contains the data import.py file to import data
     ├──── models folder: contains the checkpoint of best CNN model with respect to validation accuracy performance
     ├──── plots foder: contains PCA visualizations, accuracy vs. validation accuracy and loss vs. validation loss
-    ├──── data foder: contains the data import.py file to import data
-    ├──── medmnist_classification_env.yml: .yml file containing the Conda environment needed to run the code
-    ├──── cnn_model.py: Python file containing the CNN model
-    ├──── path_pipeline.py: Python file containing the project pipeline for PathMNIST data classification
     ├──── breast_pipeline.py: Python file containing the project pipeline for BreastMNIST data classification
+    ├──── cnn_model.py: Python file containing the CNN model
+    ├──── medmnist_classification_env.yml: .yml file containing the Conda environment needed to run the code
+    ├──── path_pipeline.py: Python file containing the project pipeline for PathMNIST data classification
     └──── utils.py: Python file containing useful functions to run code
     
    ```

@@ -3,16 +3,12 @@ from utils import data_feed, augment_data, fit_grid
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import numpy as np
-import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
-from sklearn.model_selection import RandomizedSearchCV, GridSearchCV, ParameterGrid
+from sklearn.model_selection import ParameterGrid
 from tqdm import tqdm
 
-import joblib
 from joblib import Parallel, delayed
-from dask.distributed import Client, LocalCluster
-from sklearn.model_selection import cross_val_score
 
 print("-------------- Import data --------------")
 
