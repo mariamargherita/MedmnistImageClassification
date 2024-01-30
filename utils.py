@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from tensorflow.keras import Sequential, layers
 import tensorflow
 from tqdm import tqdm
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import StratifiedKFold, cross_val_score
 
 
 def data_feed(data_flag):
@@ -128,9 +130,6 @@ def augment_data(X, y, n_augs=9):
 
     return X_aug, y_aug
 
-
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import StratifiedKFold, cross_val_score
 
 def fit_grid(X, y, param_combination):
     """

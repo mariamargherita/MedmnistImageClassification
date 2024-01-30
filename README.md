@@ -23,7 +23,8 @@ For more information about *MEDMNIST* please read [this article](https://www.nat
 
 The primary goal of this project is to address the following problem:
 
-> **Problem**: Our goal is to construct a classifier that can determine the class of a new, unseen example as accurately as possible for both *PathMNIST* and *BreastMNIST* datasets.
+> **Problem**: Our goal is to explore classifiers that can determine the class of a new, unseen example as accurately as possible for both *PathMNIST* and *BreastMNIST* datasets.
+> **Disclaimer**: This will be more an exploration of the *MEDMNIST* datasets, models and techniques than a results oriented analysis, thus our overall performance might result unsatisfactory for users who look for great results.
 
 The main *metric* that will be used to assess the performance of the models is *accuracy*.
 <br>
@@ -79,6 +80,7 @@ but the code was kept in the pipeline for reference.
 
 Preprocessing steps performed on *BreastMNIST*:
 - images were reshaped and scaled with mean 0 and standard deviation 1 to apply PCA
+- the training data were augmented with horizontal/vertical flips and random rotations
 
 >**Note**: the conversion step from RGB to grey-scale was not necessary in the *BreastMNIST* dataset since
 the images are already provided in grey-scale.
@@ -93,7 +95,7 @@ the images are already provided in grey-scale.
 
 - *BreastMNIST* dataset
     
-    ...
+    We did cross validation grid search to tune the random forest hyperparameters.
 
 <br>
 
@@ -103,14 +105,17 @@ the images are already provided in grey-scale.
     
     For exploration purposes, we fit the model on both RGB images and grey-scale images. We then decided to keep the RGB model since it held better performance results on the test set.
     
-    We trained the model on 90% of training data and reserved a 10% for validation data. Once we found the model with the best performance on the validation data, getting a *test accuracy of 85%*.
+    We trained the model on 90% of training data and reserved a 10% for validation data. Once we found the model with the best performance on the validation data, we made predictions on the test date getting a *test accuracy of 85%*.
       
     > For exploration purposes, in the pipeline we left the code for training the best model on the full training data with prediction of test data labels and respective print of performance results.
 
 
 - *BreastMNIST* dataset 
 
-    ...
+    We tuned the random forest hyperparameters on all training data by using cross validation. Once we found the best model, we made predictions on the test data getting a *test accuracy of 73%*.
+    
+    > **Note**: This test accuracy is quite low and would need to be improved by means of better hyperparameter tuning. However, the computational effort is quite significant following data augmentation.
+
 
 <br>
 
@@ -124,4 +129,6 @@ Here are some of the steps that could still be taken in order to potentially imp
   >**Note**: the RMSprop optimizer was tested on RGB model but the Adam optimizer held better results. However, it was not tested on grey-scale model.
   - Tune parameters for Adam optimizer (i.e. learning rate)
 - *BreastMNIST*:
-  - ...
+  - Perform a more intense grid search for Random Forest
+  - Play around with the data augmentation step to see if the model performance can be improved with different augmentation strategies
+  - Try different models which could for sure perform better than Random Forest
