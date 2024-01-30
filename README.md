@@ -128,6 +128,7 @@ Here are some of the steps that could still be taken in order to potentially imp
   - Try RMSprop optimizer on grey-scale image model and re-tune parameters and hyperparameters if necessary
   >**Note**: the RMSprop optimizer was tested on RGB model but the Adam optimizer held better results. However, it was not tested on grey-scale model.
   - Tune parameters for Adam optimizer (i.e. learning rate)
+  
 - *BreastMNIST*:
   - Perform a more intense grid search for Random Forest
   - Play around with the data augmentation step to see if the model performance can be improved with different augmentation strategies
